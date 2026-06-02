@@ -1,0 +1,6 @@
+{
+  "name": "CineMind AI",
+  "description": "Dynamic AI Movie Review Sentiment Analyzer featuring movie search, curated recommendations, and real-time sentiment analytics dashboard.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

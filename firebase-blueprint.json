@@ -1,0 +1,73 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "User profile containing core identification details",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string" },
+        "displayName": { "type": "string" }
+      },
+      "required": ["uid", "email", "displayName"]
+    },
+    "Review": {
+      "title": "Review",
+      "description": "A review written by a user for a specific movie",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "movieId": { "type": "string" },
+        "movieTitle": { "type": "string" },
+        "userName": { "type": "string" },
+        "userEmail": { "type": "string" },
+        "rating": { "type": "integer" },
+        "reviewText": { "type": "string" },
+        "timestamp": { "type": "integer" },
+        "sentiment": { "type": "string", "enum": ["positive", "negative", "mixed"] },
+        "sentimentScore": { "type": "integer" },
+        "sentimentExplanation": { "type": "string" }
+      },
+      "required": [
+        "id",
+        "movieId",
+        "movieTitle",
+        "userName",
+        "userEmail",
+        "rating",
+        "reviewText",
+        "timestamp",
+        "sentiment",
+        "sentimentScore",
+        "sentimentExplanation"
+      ]
+    },
+    "WatchlistItem": {
+      "title": "WatchlistItem",
+      "description": "An item saved in the user's movie watchlist",
+      "type": "object",
+      "properties": {
+        "movieId": { "type": "string" },
+        "movieTitle": { "type": "string" },
+        "moviePoster": { "type": "string" },
+        "movieYear": { "type": "string" },
+        "addedAt": { "type": "integer" }
+      },
+      "required": ["movieId", "movieTitle", "moviePoster", "movieYear", "addedAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "Stores user profile configurations"
+    },
+    "/reviews/{reviewId}": {
+      "schema": "Review",
+      "description": "Stores professional and community-driven AI reviews"
+    },
+    "/users/{userId}/watchlist/{movieId}": {
+      "schema": "WatchlistItem",
+      "description": "Stores individual items saved in user-specific watchlist"
+    }
+  }
+}

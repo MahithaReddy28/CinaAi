@@ -1,0 +1,100 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Global Safety Net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Global Helpers
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // 1. Users Profile
+    match /users/{userId} {
+      allow read: if isSignedIn();
+      allow create: if isOwner(userId)
+        && incoming().uid == userId
+        && incoming().email is string
+        && incoming().displayName is string
+        && incoming().keys().hasAll(['uid', 'email', 'displayName'])
+        && incoming().keys().size() == 3;
+      allow update: if isOwner(userId)
+        && incoming().uid == userId
+        && incoming().email == existing().email
+        && incoming().displayName is string
+        && incoming().diff(existing()).affectedKeys().hasOnly(['displayName']);
+      allow delete: if false;
+    }
+
+    // 2. Reviews
+    match /reviews/{reviewId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn()
+        && incoming().id == reviewId
+        && incoming().movieId is string
+        && incoming().movieId.size() <= 128
+        && incoming().movieTitle is string
+        && incoming().movieTitle.size() <= 300
+        && incoming().userName is string
+        && incoming().userName.size() <= 200
+        && incoming().userEmail == request.auth.token.email
+        && incoming().rating >= 1 && incoming().rating <= 5
+        && incoming().reviewText is string
+        && incoming().reviewText.size() <= 10000
+        && incoming().timestamp == request.time.toMillis()
+        && incoming().sentiment in ['positive', 'negative', 'mixed']
+        && incoming().sentimentScore is int
+        && incoming().sentimentExplanation is string
+        && incoming().keys().hasAll(['id', 'movieId', 'movieTitle', 'userName', 'userEmail', 'rating', 'reviewText', 'timestamp', 'sentiment', 'sentimentScore', 'sentimentExplanation'])
+        && incoming().keys().size() == 11;
+      allow update: if isSignedIn()
+        && existing().userEmail == request.auth.token.email
+        && incoming().id == existing().id
+        && incoming().movieId == existing().movieId
+        && incoming().userEmail == existing().userEmail
+        && incoming().rating >= 1 && incoming().rating <= 5
+        && incoming().reviewText is string
+        && incoming().reviewText.size() <= 10000
+        && incoming().timestamp == existing().timestamp
+        && incoming().sentiment in ['positive', 'negative', 'mixed']
+        && incoming().sentimentScore is int
+        && incoming().sentimentExplanation is string
+        && incoming().diff(existing()).affectedKeys().hasOnly(['rating', 'reviewText', 'sentiment', 'sentimentScore', 'sentimentExplanation']);
+      allow delete: if isSignedIn() && existing().userEmail == request.auth.token.email;
+    }
+
+    // 3. User Watchlist
+    match /users/{userId}/watchlist/{movieId} {
+      allow read: if isOwner(userId);
+      allow create: if isOwner(userId)
+        && incoming().movieId == movieId
+        && incoming().movieTitle is string
+        && incoming().movieTitle.size() <= 300
+        && incoming().moviePoster is string
+        && incoming().movieYear is string
+        && incoming().addedAt == request.time.toMillis()
+        && incoming().keys().hasAll(['movieId', 'movieTitle', 'moviePoster', 'movieYear', 'addedAt'])
+        && incoming().keys().size() == 5;
+      allow update: if false;
+      allow delete: if isOwner(userId);
+    }
+  }
+}
