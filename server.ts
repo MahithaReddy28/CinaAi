@@ -8,12 +8,20 @@ import path from 'path';
 import { createServer as createViteServer } from "vite";
 import { GoogleGenAI, Type } from "@google/genai";
 import dotenv from "dotenv";
+import cors from "cors";
 
 dotenv.config();
 
 const app = express();
 const PORT = 3000;
-
+app.use(cors({
+  origin: [
+    "http://localhost:3000",
+    "https://cina-ai.vercel.app"
+  ],
+  methods: ["GET", "POST", "OPTIONS"],
+  credentials: true
+}));
 app.use(express.json());
 
 // Lazy-initialized Gemini AI client to avoid crash on load if API key is not ready
