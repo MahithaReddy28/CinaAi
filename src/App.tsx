@@ -90,7 +90,7 @@ export default function App() {
     setLoading(true);
     setError('');
     try {
-      const res = await fetch('/api/movie/search', {
+      const res = await fetch('https://cinaai.onrender.com/api/movie/search', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ query: queryStr })
